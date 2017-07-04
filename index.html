@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8"/>
+  <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://rawgit.com/jonmiles/bootstrap-treeview/master/public/css/bootstrap-treeview.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://rawgit.com/jonmiles/bootstrap-treeview/master/public/js/bootstrap-treeview.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+<style>
+.topnav {
+  overflow: hidden;
+  background-color: #DCDCDC;
+  height: 60px;
+  float: left;
+  display: block;
+  color: #000000;
+  text-align: left;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+  width: 100%;
+}
+
+.search {
+  width: 550px;
+}
+
+.select {
+  padding-left: 20px
+}
+
+.counter {
+  padding-right: 20px;
+  float: right;
+}
+.cancel {
+  width: 40%;
+  margin-left: 50px;
+}
+.ok {
+  width: 40%
+}
+
+</style>
+<body>
+  <p class="topnav">
+  Select Material Tags
+  <button type="button" class="close" data-dismiss="modal">&times;</button>
+</p>
+<br>
+<p id="select-category">
+  <label class="select" for="category"> Select Category:</label>
+  <select class="select" id="category-search" name="category" form="category">
+    <option value="Ferrous">Ferrous</option>
+    <option value="Non-Ferrous">Non-Ferrous</option>
+  </select>
+</p>
+<p id="select-type">
+  <label for="type" class="select">Select type:</label>
+  <select name="type" class="select" id="type_metal" form="type">
+    <option value="Al">Al; Aluminum alloy; Aluminum</option>
+    <option value="Mg">Mg; Magnesium alloy; Magnesium</option>
+    <option value="Cu">Cu; Copper alloy; Copper</option>
+    <option value="Zr">Zr; Zirconium alloy; Zirconium</option>
+    <option value="Ni">Ni; Nickel alloy; Nickel</option>
+    <option value="Ti">Ti; Titanium alloy; Titanium</option>
+    <option value="Fe">Fe; Steel alloy; Iron </option>
+  </select>
+</p>
+<p id="search-category">
+  <input type="text" id="input-search" class="search" placeholder="Search Categories"/>
+</p>
+<p>
+<input type="checkbox" class = "select" id="all" name="all" value="all"> Select All
+<span id="counter" class="counter"></span>
+</p>
+
+  <div id="treeview-searchable" class="treeview"></div>
+
+<div class="row">
+  <button type="button" class="btn cancel ">Cancel</button>
+  <button type="button" class="btn btn-warning ok">Ok</button>
+</div>
+</body>
+ <script>
+ var selected_counter = 0;
+var materialTree = [{
+  text: "Ferrous",
+  nodes: [{
+    text: "Metal",
+    nodes: [{
+      text: "Fe",
+      nodes: [{
+        text: "Steel Alloy",
+        nodes: [{
+          text: "Iron",
+          nodes: [{
+            text: "Wrought Alloys",
+            nodes: [{
+              text: "Carbon and Alloy Steel ",
+              nodes: [{
+                text: "Carbon Steels",
+                nodes: [{
+                  text: "10XX",
+                }, {
+                  text: "11XX"
+                }, {
+                  text: "12XX"
+                }, {
+                  text: "15XX"
+                }]
+              }]
+            }]
+          }]
+        }]
+      }]
+    }]
+  }]
+}, {
+  text: "Non-Ferrous",
+  nodes: [{
+    text: "Other-Metal",
+    nodes: [{
+      text: "Al"
+    }, {
+      text: "Mg" },
+      {
+      text: "Cu"
+    }, {
+      text: "Zr"
+    }, {
+      text: "Ni"
+    }, {
+      text: "Ti"
+    }]
+  }]
+
+}];
+
+var ferrous_array = ["Ferrous", "Metal", "Fe", "Steel Alloy", "Iron", "Wrought Alloys", "Carbon and Alloy Steel", "Carbon Steels", "10XX", "11XX", "12XX", "15XX"];
+var non_ferrous_array = ["Non-Ferrous", "Other-Metal", "Al", "Mg", "Cu", "Zr", "Ni", "Ti"];
+
+var $searchableTree = $('#treeview-searchable').treeview({
+  levels: 1,
+  checkedIcon: 'glyphicon glyphicon-check',
+  uncheckedIcon: 'glyphicon glyphicon-unchecked',
+
+  // colors
+  color: undefined, // '#000000',
+  backColor: undefined, // '#FFFFFF',
+  borderColor: undefined, // '#dddddd',
+  onhoverColor: '#F5F5F5',
+  selectedColor: '#FFFFFF',
+  selectedBackColor: '#428bca',
+  searchResultColor: '#D9534F',
+  searchResultBackColor: undefined, //'#FFFFFF',
+
+  // enables links
+  enableLinks: false,
+
+  // highlights selected items
+  highlightSelected: true,
+
+  // highlights search results
+  highlightSearchResults: false,
+
+  // shows borders
+  showBorder: true,
+
+  // shows icons
+  showIcon: false,
+
+  // shows checkboxes
+  showCheckbox: true,
+
+  // shows tags
+  showTags: false,
+
+  // enables multi select
+  multiSelect: true,
+
+  data: materialTree
+
+});
+
+//$(function () {
+var selectors = {
+  'tree': $searchableTree,
+  'input': '#input-search',
+  'category': '#category-search',
+  'reset': '#btn-clear-search'
+};
+
+
+// search callback
+var search = function(e) {
+$('#treeview-searchable').treeview('uncheckAll', {
+    silent: true
+  });
+selected_counter = 0;
+   if(e.keyCode == 13) {
+  $('#treeview-searchable').treeview('collapseAll', {
+    silent: true
+  });
+  $('#treeview-searchable').treeview('uncheckAll', {
+    silent: true
+  });
+  var pattern = $(selectors.input).val();
+  console.log("Pattern is"+pattern)
+  ferrous_array.forEach(function(item, index) {
+    if (item == pattern) {
+    $("#type_metal").val("Fe");
+    $("#category-search").val("Ferrous");
+    for (var i = 0; i < ferrous_array.length; i++) {
+        selected_counter++;
+        $('#treeview-searchable').treeview('expandNode', [i, {
+          silent: true,
+          ignoreChildren: false
+        }]);
+        $('#treeview-searchable').treeview('checkNode', [i, {
+          silent: true
+        }]);
+        document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+      }
+     }
+    });
+    non_ferrous_array.forEach(function(item, index) {
+    var base = ferrous_array.length;
+    if (item == pattern) {
+      if(item == "Non-Ferrous" || item =="Other-Metal") {
+        $("#type_metal").val("Al");
+        $("#category-search").val("Non-Ferrous");
+        for(i=0; i<non_ferrous_array.length; i++) {
+            selected_counter++;
+            $('#treeview-searchable').treeview('expandNode', [i+base,{
+          silent: true,
+          ignoreChildren: false
+        }]);
+        $('#treeview-searchable').treeview('checkNode', [i+base, {
+          silent: true
+        }]);
+        }
+         document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+         return;
+      }
+       $("#type_metal").val(item);
+    $("#category-search").val("Non-Ferrous");
+      for(var i =0; i<non_ferrous_array.length;i++)
+        if(i==0 || i==1 || i==index) {
+        selected_counter++;
+         $('#treeview-searchable').treeview('expandNode', [i+base,{
+          silent: true,
+          ignoreChildren: false
+        }]);
+        $('#treeview-searchable').treeview('checkNode', [i+base, {
+          silent: true
+        }]);
+         document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+        }
+      }
+    });
+  }
+ };
+
+var searchCategory = function(e) {
+$('#treeview-searchable').treeview('uncheckAll', {
+    silent: true
+  });
+selected_counter = 0;
+  $('#treeview-searchable').treeview('collapseAll', {
+    silent: true
+  });
+  $('#treeview-searchable').treeview('uncheckAll', {
+    silent: true
+  });
+  var category = document.getElementById("category-search");
+  var categoryValue = category.options[category.selectedIndex].value;
+  if (categoryValue == "Ferrous") {
+
+    $("#type_metal").val("Fe");
+    for (i = 0; i < 5; i++) {
+      selected_counter++;
+      $('#treeview-searchable').treeview('expandNode', [i, {
+        silent: true,
+        ignoreChildren: false
+      }]);
+      $('#treeview-searchable').treeview('checkNode', [i, {
+        silent: true
+      }]);
+     document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+    }
+
+
+  } else {
+    selected_counter = 3;
+    document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+    $("#type_metal").val("Al");
+    $('#treeview-searchable').treeview('checkNode', [12, {
+      silent: true
+    }]);
+    $('#treeview-searchable').treeview('checkNode', [13, {
+      silent: true
+    }]);
+    $('#treeview-searchable').treeview('checkNode', [14, {
+      silent: true
+    }]);
+    $('#treeview-searchable').treeview('expandNode', [12, {
+      silent: true
+    }]);
+    $('#treeview-searchable').treeview('expandNode', [13, {
+      silent: true
+    }]);
+  }
+
+};
+
+var searchType = function(e) {
+$('#treeview-searchable').treeview('uncheckAll', {
+    silent: true
+  });
+selected_counter = 0;
+  $('#treeview-searchable').treeview('collapseAll', {
+    silent: true
+  });
+  $('#treeview-searchable').treeview('uncheckAll', {
+    silent: true
+  });
+  var type = document.getElementById("type_metal");
+  var typeValue = type.options[type.selectedIndex].value;
+  if (typeValue == "Fe") {
+
+    $("#category-search").val("Ferrous");
+    for (i = 0; i < 5; i++) {
+      selected_counter++;
+      $('#treeview-searchable').treeview('expandNode', [i, {
+        silent: true,
+        ignoreChildren: false
+      }]);
+      $('#treeview-searchable').treeview('checkNode', [i, {
+        silent: true
+      }]);
+      document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+     }
+  } else {
+
+    $("#category-search").val("Non-Ferrous");
+    non_ferrous_array.forEach(function(item, index) {
+    var base = ferrous_array.length;
+    if (item == typeValue) {
+      for(var i =0; i<non_ferrous_array.length;i++)
+        if(i==0 || i==1 || i==index) {
+         selected_counter++;
+         $('#treeview-searchable').treeview('expandNode', [i+base,{
+          silent: true,
+          ignoreChildren: false
+        }]);
+        $('#treeview-searchable').treeview('checkNode', [i+base, {
+          silent: true
+        }]);
+        }
+      }
+      document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+    });
+  }
+
+};
+
+var searchOnSelect = function(match) {
+$('#treeview-searchable').treeview('uncheckAll', {
+    silent: true
+  });
+  selected_counter = 0;
+  var pattern = match;
+  console.log("Pattern is"+pattern)
+  ferrous_array.forEach(function(item, index) {
+    if (item == pattern) {
+    $("#type_metal").val("Fe");
+    $("#category-search").val("Ferrous");
+    for (var i = 0; i < ferrous_array.length; i++) {
+        selected_counter++;
+        $('#treeview-searchable').treeview('expandNode', [i, {
+          silent: true,
+          ignoreChildren: false
+        }]);
+        $('#treeview-searchable').treeview('checkNode', [i, {
+          silent: true
+        }]);
+      }
+      document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+     }
+    });
+    non_ferrous_array.forEach(function(item, index) {
+    var base = ferrous_array.length;
+    if (item == pattern) {
+      if(item == "Non-Ferrous" || item =="Other-Metal") {
+        $("#type_metal").val("Al");
+        $("#category-search").val("Non-Ferrous");
+        for(i=0; i<non_ferrous_array.length; i++) {
+            selected_counter++;
+            $('#treeview-searchable').treeview('expandNode', [i+base,{
+          silent: true,
+          ignoreChildren: false
+        }]);
+        $('#treeview-searchable').treeview('checkNode', [i+base, {
+          silent: true
+        }]);
+        }
+        document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+         return;
+      }
+       $("#type_metal").val(item);
+    $("#category-search").val("Non-Ferrous");
+      for(var i =0; i<non_ferrous_array.length;i++)
+        if(i==0 || i==1 || i==index) {
+         selected_counter++;
+         $('#treeview-searchable').treeview('expandNode', [i+base,{
+          silent: true,
+          ignoreChildren: false
+        }]);
+        $('#treeview-searchable').treeview('checkNode', [i+base, {
+          silent: true
+        }]);
+        }
+        document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+      }
+    });
+ };
+
+// typing in search field
+$(selectors.input).on('keyup', search);
+$('#category-search').val("Ferrous");
+$('#type_metal').val("Fe");
+for (i = 0; i < 5; i++) {
+ selected_counter++;
+$('#treeview-searchable').treeview('expandNode', [i, {
+        silent: true,
+        ignoreChildren: false
+      }]);
+$('#treeview-searchable').treeview('checkNode', [i, {
+    silent: true
+  }]);
+}
+document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+
+
+$('#category-search').on('change', searchCategory);
+$('#type_metal').on('change',searchType);
+
+
+$('#all').change(function() {
+
+  $('#treeview-searchable').treeview('collapseAll', {
+    silent: true
+  });
+  $('#treeview-searchable').treeview('uncheckAll', {
+    silent: true
+  });
+  console.log("In all");
+  if ($(this).is(":checked")) {
+    $('#treeview-searchable').treeview('expandAll', {
+      silent: true
+    });
+    $('#treeview-searchable').treeview('checkAll', {
+      silent: true
+    });
+    selected_counter = 20;
+    document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+    return;
+  }
+  $('#treeview-searchable').treeview('uncheckAll', {
+    silent: true
+  });
+  selected_counter = 0;
+  document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+  return;
+});
+$('#treeview-searchable').on('nodeChecked', function(event, data) {
+
+  console.log("Data is"+JSON.stringify(data));
+  searchOnSelect(data.text)
+});
+$('#treeview-searchable').on('nodeUnchecked', function(event, data) {
+   selected_counter = 0;
+   document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+   $('#treeview-searchable').treeview('uncheckAll', {
+    silent: true
+  });
+    $('#treeview-searchable').treeview('collapseAll', { silent: true });
+});
+document.getElementById("counter").innerHTML =
+selected_counter + " categories selected" ;
+
+
+ </script>
+</body>
+
+</html>
